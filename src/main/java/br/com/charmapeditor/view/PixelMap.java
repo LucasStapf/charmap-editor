@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -12,6 +13,8 @@ import java.util.Iterator;
  * Conjunto de {@link Pixel} que forma uma imagem. A quantidade de linhas e colunas do mapa pode ser alterado.
  */
 public class PixelMap extends GridPane {
+
+    private ArrayList<ArrayList<Pixel>> map;
 
     /**
      * Propriedade do número de linhas do PixelMap.
@@ -95,15 +98,24 @@ public class PixelMap extends GridPane {
     private void updateMap() {
 
         getChildren().clear();
+        map.clear();
+        map = new ArrayList<>(rows.get());
+
         double width_p = getPrefWidth() / columns.get();
         double height_p = getPrefHeight() / rows.get();
 
         for (int i = 0; i < rows.get(); i++) {
+            map.set(i, new ArrayList<>(columns.get()));
             for (int j = 0; j < columns.get(); j++) {
                 Pixel p = new Pixel(width_p, height_p);
                 add(p, i, j);
+                map.get(i).set(j, p);
             }
         }
+    }
+
+    Pixel getPixel(int row, int column) throws IllegalArgumentException {
+        return map.get(row).get(column);
     }
 
     /* ================= Overrides ================= */
