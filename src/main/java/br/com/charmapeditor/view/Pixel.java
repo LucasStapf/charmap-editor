@@ -1,10 +1,13 @@
 package br.com.charmapeditor.view;
 
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 
 /**
  * Representação do pixel na tela do simulador. Pode assumir dois estados: ligado e desligado.
@@ -12,10 +15,36 @@ import javafx.scene.layout.Region;
 public class Pixel extends Region {
 
     /**
-     * Propriedade relacionada ao estado do {@link Pixel}. Se o valor guardado por status for true,
-     * o pixel está ligado, caso contrário está desligado.
+     * Valores de cores que um {@link Pixel} pode ter.
      */
-    private final BooleanProperty status = new SimpleBooleanProperty(false);
+    public enum COLOR {
+
+        BLACK {
+            @Override
+            public String RGBA() {
+                return Color.BLACK.toString().substring(2);
+            }
+        },
+
+        WHITE {
+            @Override
+            public String RGBA() {
+                return Color.WHITE.toString().substring(2);
+            }
+        };
+
+        /**
+         * Retorna o valor da cor.
+         * @return retorna o valor da cor no formato RGBA8888 em hexadecimal.
+         */
+        public abstract String RGBA();
+    }
+
+    /**
+     * Propriedade da cor do {@link Pixel}. Por padrão, a cor pode assumir apenas os definidos pela
+     * {@link COLOR}.
+     */
+    private final ObjectProperty<COLOR> colorProperty = new SimpleObjectProperty<>(COLOR.WHITE);
 
     public Pixel(double width, double height) {
 
@@ -25,55 +54,48 @@ public class Pixel extends Region {
 
         EventHandler<MouseEvent> click = mouseEvent -> {
             switch (mouseEvent.getButton()) {
-                case PRIMARY -> setStatus(true);
-                case SECONDARY -> setStatus(false);
+                case PRIMARY -> setColorProperty(COLOR.BLACK);
+                case SECONDARY -> setColorProperty(COLOR.WHITE);
             }
         };
 
         addEventHandler(MouseEvent.MOUSE_CLICKED, click);
 
-        statusProperty().addListener((observable, oldValue, newValue) -> updateBackgroundColor());
-        setStatus(false);
+        colorProperty().addListener(observable -> updateBackgroundColor());
         updateBackgroundColor();
     }
 
     /**
-     * Retorna true se o pixel está ligado, false caso contrário.
-     * @return true se o pixel está ligado, false caso contrário.
+     * Retorna a cor atual desse pixel.
+     * @return a constante que define a cor do pixel.
      */
-    public boolean getStatus() {
-        return status.get();
+    public COLOR getColorProperty() {
+        return colorProperty.get();
     }
 
     /**
-     * Retorna a propriedade que armazena o status atual do pixel.
-     * @return a propriedade que armazena o status atual do pixel.
+     * Retorna a propriedade da cor desse pixel.
+     * @return a propriedade da cor desse pixel.
      */
-    public BooleanProperty statusProperty() {
-        return status;
+    public ObjectProperty<COLOR> colorProperty() {
+        return colorProperty;
     }
 
     /**
-     * Altera o status atual do pixel.
-     * @param status novo status.
+     * Altera o valor da propriedade de cor.
+     * @param colorProperty nova cor.
      */
-    public void setStatus(boolean status) {
-        this.status.set(status);
+    public void setColorProperty(COLOR colorProperty) {
+        this.colorProperty.set(colorProperty);
     }
 
     /**
      * Atualiza a cor do pixel de acordo com o status atual.
      */
     private void updateBackgroundColor() {
-
         String str_border_color = "-fx-border-color: black;";
-        String str_background_color;
-        if (status.get()) {
-            str_background_color = "-fx-background-color: black;";
-        } else {
-            str_background_color = "-fx-background-color: white;";
-        }
-
+        String RGBAh = colorProperty.get().RGBA();
+        String str_background_color = "-fx-background-color: #" + RGBAh;
         setStyle(str_border_color + str_background_color);
     }
 
